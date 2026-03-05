@@ -4,7 +4,7 @@ const Post = require("../models/Post");
 
 const authService = require("../middlewares/authService");
 
-router.get("/", authService.verifyToken, async (req, res) => {
+router.get("/", async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const size = parseInt(req.query.size) || 10;
     const offset = (page - 1) * size
