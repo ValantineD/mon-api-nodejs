@@ -1,8 +1,10 @@
 const express = require("express");
 const router = express.Router();
-const Post = require("../models/Post");
 
 const authService = require("../middlewares/authService");
+const Post = require("../models/Post");
+const Comment = require("../models/Comment");
+
 
 router.get("/", async (req, res) => {
     const page = parseInt(req.query.page) || 1;
@@ -68,6 +70,42 @@ router.post("/new", authService.verifyToken, async (req, res) => {
     }
 });
 
+router.get("/:id", async (req, res) => {
+    const {id} = req.params;
+
+    try {
+        const post = await Post.findById(id);
+        const comments = await Comment.find({
+            _postId: post._id,
+        });
+
+        if (!post) {
+            return res.status(404).json({
+                error: {
+                    code: "RESSOURCE_NOT_FOUND",
+                    message: "Post not found",
+                },
+            });
+        }
+
+        return res.status(200).json({
+            post: post,
+            comments: comments,
+        });
+
+    } catch (err) {
+
+        return res.status(500).json({
+            error: {
+                code: "INTERNAL_SERVER_ERROR",
+                message: "An unexpected error occurred",
+            },
+        });
+
+    }
+
+});
+
 router.patch("/:id/", authService.verifyToken, async (req, res) => {
     const {id} = req.params;
 
@@ -98,11 +136,7 @@ router.patch("/:id/", authService.verifyToken, async (req, res) => {
         });
 
 
-        return res.status(200).json({
-            success: true,
-            message: "Post updated successfully",
-            post: post,
-        });
+        return res.status(200).json(comment);
 
     } catch (err) {
 
