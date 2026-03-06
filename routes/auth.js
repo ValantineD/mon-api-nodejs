@@ -9,7 +9,7 @@ const User = require("../models/User");
 router.post("/register", async (req, res) => {
     const { username, email, password } = req.body;
     try {
-        const user = User(req.body);
+        const user = User({ username, email, password });
         await user.validate();
 
         const hash = await bcrypt.hash(user.password, 10);
@@ -58,10 +58,10 @@ router.post("/register", async (req, res) => {
 });
 
 router.post("/login", async (req, res) => {
-    const {email, password} = req.body;
+    const { email, password } = req.body;
 
     try {
-        const user = await User.findOne({email: email});
+        const user = await User.findOne({ email: email });
         if (!user) {
             return res.status(400).json({
                 error: {
@@ -90,8 +90,13 @@ router.post("/login", async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: "login successful",
+            message: "User authenticated successfully",
             accessToken: accessToken,
+            user: {
+                _id: user._id,
+                username: user.username,
+                email: user.email,
+            },
         });
 
 
